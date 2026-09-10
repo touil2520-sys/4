@@ -75,6 +75,80 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
  .group-row{grid-template-columns:1fr}
  .form-card{padding:18px}
 }
+/* =====================================
+💰 نظام الأسعار والمواقيت
+===================================== */
+
+.pricing-admin-card{
+grid-column:1/-1;
+background:#fff;
+border-radius:20px;
+padding:20px;
+box-shadow:var(--shadow);
+}
+
+.pricing-section{
+border:1px solid #e5e9f0;
+border-radius:16px;
+padding:15px;
+margin-top:14px;
+}
+
+.pricing-section h4{
+margin:0 0 12px;
+}
+
+.price-admin-row{
+display:grid;
+grid-template-columns:1fr 180px;
+gap:10px;
+align-items:end;
+margin-bottom:10px;
+}
+
+.schedule-admin-row{
+display:grid;
+grid-template-columns:1.4fr 120px 120px;
+gap:10px;
+align-items:end;
+margin-bottom:10px;
+}
+
+.pricing-input-title{
+font-size:12px;
+color:var(--muted);
+margin-bottom:5px;
+display:block;
+}
+
+.user-registration-info{
+margin-top:15px;
+padding:16px;
+border-radius:16px;
+background:#eef7f2;
+border:1px solid #ccebd9;
+color:#174c31;
+line-height:1.9;
+}
+
+.user-registration-info .info-price{
+font-size:20px;
+font-weight:900;
+color:#16834b;
+}
+
+.user-registration-info .info-time{
+font-size:18px;
+font-weight:900;
+color:#073b70;
+}
+
+@media(max-width:760px){
+.price-admin-row,
+.schedule-admin-row{
+grid-template-columns:1fr;
+}
+}
 </style>
 </head>
 <body>
@@ -214,160 +288,6 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
     <div class="actions"><button class="btn btn-primary" onclick="loginAdmin()">دخول</button><button class="btn btn-light" onclick="closeAdmin()">إلغاء</button></div>
   </div>
 </div>
-<!-- الأسعار والمواقيت والنقل -->
-<section class="container" style="margin-top:30px">
-
-<!-- أسعار المدرسة حسب المستوى -->
-<div class="info-card">
-<h2>💰 أسعار المدرسة</h2>
-<p class="small">أسعار الدراسة حسب المستوى الدراسي</p>
-
-<div class="grid">
-
-<div class="kpi">
-<span class="small">السنة الأولى ثانوي</span>
-<strong>_____ دج / شهر</strong>
-</div>
-
-<div class="kpi">
-<span class="small">السنة الثانية ثانوي</span>
-<strong>_____ دج / شهر</strong>
-</div>
-
-<div class="kpi">
-<span class="small">السنة الثالثة ثانوي</span>
-<strong>_____ دج / شهر</strong>
-</div>
-
-<div class="kpi">
-<span class="small">السنة الرابعة متوسط</span>
-<strong>_____ دج / شهر</strong>
-</div>
-
-<div class="kpi">
-<span class="small">السنة الثالثة متوسط</span>
-<strong>_____ دج / شهر</strong>
-</div>
-
-<div class="kpi">
-<span class="small">السنة الثانية متوسط</span>
-<strong>_____ دج / شهر</strong>
-</div>
-
-<div class="kpi">
-<span class="small">السنة الأولى متوسط</span>
-<strong>_____ دج / شهر</strong>
-</div>
-
-</div>
-</div>
-
-
-<!-- مواقيت أفواج المدرسة -->
-<div class="info-card" style="margin-top:18px">
-<h2>🕐 مواقيت أفواج المدرسة</h2>
-<p class="small">مواعيد الدراسة لكل فوج</p>
-
-<div class="grid">
-
-<div class="kpi">
-<span class="small">فوج 1</span>
-<strong>__:__ → __:__</strong>
-</div>
-
-<div class="kpi">
-<span class="small">فوج 2</span>
-<strong>__:__ → __:__</strong>
-</div>
-
-<div class="kpi">
-<span class="small">فوج 3</span>
-<strong>__:__ → __:__</strong>
-</div>
-
-<div class="kpi">
-<span class="small">فوج 4</span>
-<strong>__:__ → __:__</strong>
-</div>
-
-</div>
-</div>
-
-
-<!-- أسعار الروضة -->
-<div class="info-card" style="margin-top:18px">
-<h2>🧸 أسعار الروضة</h2>
-<p class="small">أسعار الروضة حسب الفترة</p>
-
-<div class="grid">
-
-<div class="kpi">
-<span class="small">الفترة الصباحية</span>
-<strong>_____ دج / شهر</strong>
-</div>
-
-<div class="kpi">
-<span class="small">الفترة المسائية</span>
-<strong>_____ دج / شهر</strong>
-</div>
-
-<div class="kpi">
-<span class="small">صباحية + مسائية</span>
-<strong>_____ دج / شهر</strong>
-</div>
-
-</div>
-</div>
-
-
-<!-- مواقيت أفواج الروضة -->
-<div class="info-card" style="margin-top:18px">
-<h2>🕐 مواقيت أفواج الروضة</h2>
-<p class="small">مواعيد كل فوج في الروضة</p>
-
-<div class="grid">
-
-<div class="kpi">
-<span class="small">فوج 1</span>
-<strong>__:__ → __:__</strong>
-</div>
-
-<div class="kpi">
-<span class="small">فوج 2</span>
-<strong>__:__ → __:__</strong>
-</div>
-
-<div class="kpi">
-<span class="small">فوج 3</span>
-<strong>__:__ → __:__</strong>
-</div>
-
-<div class="kpi">
-<span class="small">فوج 4</span>
-<strong>__:__ → __:__</strong>
-</div>
-
-</div>
-</div>
-
-
-<!-- نقل أطفال الروضة -->
-<div class="info-card" style="margin-top:18px">
-<h2>🐢 نقل أطفال الروضة</h2>
-
-<p>
-خدمة نقل أطفال الروضة بواسطة مركبة
-<strong>فكرونة 🐢</strong>.
-</p>
-
-<label>
-<input type="checkbox" name="transport" value="فكرونة 🐢">
-أريد الاستفادة من خدمة النقل بواسطة فكرونة 🐢
-</label>
-
-</div>
-
-</section>
 
 <footer>
 © 2026 Louei School & Crèche Loulou
@@ -788,6 +708,942 @@ function exportRegistrations(){
 }
 document.getElementById("schoolLogo").src=LOGO_SCHOOL;
 document.getElementById("crecheLogo").src=LOGO_CRECHE;
+<script>
+
+/* =====================================================
+💰 الأسعار والمواقيت
+نظام مستقل يضاف إلى الموقع الرئيسي
+===================================================== */
+
+(function(){
+
+/* إنشاء الإعدادات إذا لم تكن موجودة */
+settings.prices = settings.prices || {
+school: {},
+schoolSchedules: {},
+creche: {}
+};
+
+settings.prices.school =
+settings.prices.school || {};
+
+settings.prices.schoolSchedules =
+settings.prices.schoolSchedules || {};
+
+settings.prices.creche =
+settings.prices.creche || {};
+
+
+/* =====================================================
+🔑 مفتاح توقيت فوج المدرسة
+===================================================== */
+
+function schoolScheduleKey(stage,level,specialization,group){
+return [
+stage || "",
+level || "",
+specialization || "",
+group || ""
+].join("|||");
+}
+
+
+/* =====================================================
+💰 سعر مستوى المدرسة
+===================================================== */
+
+function getSchoolPrice(level){
+return Number(
+settings.prices.school[level] || 0
+);
+}
+
+
+/* =====================================================
+🕐 توقيت فوج المدرسة
+===================================================== */
+
+function getSchoolSchedule(stage,level,specialization,group){
+
+const key = schoolScheduleKey(
+stage,
+level,
+specialization,
+group
+);
+
+return settings.prices.schoolSchedules[key] || {
+start:"08:00",
+end:"10:00"
+};
+}
+
+
+/* =====================================================
+🧸 معلومات فوج الروضة
+===================================================== */
+
+function getCrecheInfo(group){
+
+return settings.prices.creche[group] || {
+start:"08:00",
+end:"12:00",
+price:0
+};
+}
+
+
+/* =====================================================
+🛠️ إنشاء لوحة الأسعار والمواقيت داخل الإدارة
+===================================================== */
+
+function createPricingAdmin(){
+
+const adminGrid =
+document.querySelector("#adminPage .admin-grid");
+
+if(!adminGrid)return;
+
+let old =
+document.getElementById("pricingAdminCard");
+
+if(old)old.remove();
+
+const card=document.createElement("div");
+
+card.id="pricingAdminCard";
+card.className="pricing-admin-card";
+
+card.innerHTML=`
+
+<h3>💰 الأسعار والمواقيت</h3>
+
+<p class="small">
+من هنا يمكنك تغيير أسعار الدراسة ومواقيت الأفواج.
+بعد الضغط على حفظ الإعدادات، تظهر المعلومات تلقائيًا
+للمتسجلين.
+</p>
+
+<!-- ================= المدرسة ================= -->
+
+<div class="pricing-section">
+
+<h4>📚 أسعار المدرسة حسب المستوى</h4>
+
+<div id="schoolPricesEditor"></div>
+
+</div>
+
+
+<!-- ================= مواقيت المدرسة ================= -->
+
+<div class="pricing-section">
+
+<h4>🕐 مواقيت أفواج المدرسة</h4>
+
+<div id="schoolSchedulesEditor"></div>
+
+</div>
+
+
+<!-- ================= الروضة ================= -->
+
+<div class="pricing-section">
+
+<h4>🧸 أسعار ومواقيت أفواج الروضة</h4>
+
+<div id="crechePricesEditor"></div>
+
+</div>
+
+
+<div class="actions">
+
+<button
+type="button"
+class="btn btn-primary"
+id="savePricesButton">
+
+💾 حفظ الأسعار والمواقيت
+
+</button>
+
+</div>
+
+`;
+
+adminGrid.insertBefore(
+card,
+adminGrid.firstElementChild
+);
+
+
+renderPricingAdmin();
+
+
+document
+.getElementById("savePricesButton")
+.onclick=function(){
+
+savePricingSettings();
+
+alert("تم حفظ الأسعار والمواقيت بنجاح ✅");
+
+renderPricingAdmin();
+
+};
+
+}
+
+
+/* =====================================================
+💰 عرض أسعار المدرسة
+===================================================== */
+
+function renderSchoolPrices(){
+
+const box =
+document.getElementById("schoolPricesEditor");
+
+if(!box)return;
+
+const levels =
+unique(
+settings.programs.map(
+p=>p.level
+)
+);
+
+if(!levels.length){
+
+box.innerHTML=
+'<p class="small">لا توجد مستويات مدرسية.</p>';
+
+return;
+}
+
+box.innerHTML=levels.map(level=>`
+
+<div class="price-admin-row">
+
+<div>
+<label class="pricing-input-title">
+المستوى الدراسي
+</label>
+
+<strong>
+${esc(level)}
+</strong>
+</div>
+
+<div>
+
+<label class="pricing-input-title">
+السعر الشهري بالدج
+</label>
+
+<input
+type="number"
+min="0"
+value="${getSchoolPrice(level)}"
+data-school-price="${esc(level)}"
+>
+
+</div>
+
+</div>
+
+`).join("");
+
+}
+
+
+/* =====================================================
+🕐 عرض مواقيت المدرسة
+===================================================== */
+
+function renderSchoolSchedules(){
+
+const box =
+document.getElementById(
+"schoolSchedulesEditor"
+);
+
+if(!box)return;
+
+const combinations=[];
+
+settings.programs.forEach(p=>{
+
+const key=schoolScheduleKey(
+p.stage,
+p.level,
+p.specialization,
+p.group
+);
+
+if(!combinations.some(x=>x.key===key)){
+
+combinations.push({
+key:key,
+stage:p.stage,
+level:p.level,
+specialization:p.specialization,
+group:p.group
+});
+
+}
+
+});
+
+
+if(!combinations.length){
+
+box.innerHTML=
+'<p class="small">لا توجد أفواج مدرسية.</p>';
+
+return;
+
+}
+
+
+box.innerHTML=combinations.map(item=>{
+
+const schedule =
+getSchoolSchedule(
+item.stage,
+item.level,
+item.specialization,
+item.group
+);
+
+return `
+
+<div class="schedule-admin-row">
+
+<div>
+
+<label class="pricing-input-title">
+الفوج
+</label>
+
+<strong>
+${esc(item.level)}
+-
+${esc(item.specialization)}
+-
+${esc(item.group)}
+</strong>
+
+</div>
+
+
+<div>
+
+<label class="pricing-input-title">
+من
+</label>
+
+<input
+type="time"
+value="${esc(schedule.start)}"
+data-school-start="${esc(item.key)}"
+>
+
+</div>
+
+
+<div>
+
+<label class="pricing-input-title">
+إلى
+</label>
+
+<input
+type="time"
+value="${esc(schedule.end)}"
+data-school-end="${esc(item.key)}"
+>
+
+</div>
+
+</div>
+
+`;
+
+}).join("");
+
+}
+
+
+/* =====================================================
+🧸 عرض أسعار ومواقيت الروضة
+===================================================== */
+
+function renderCrechePrices(){
+
+const box =
+document.getElementById(
+"crechePricesEditor"
+);
+
+if(!box)return;
+
+
+const groups =
+settings.crecheGroups || [];
+
+
+if(!groups.length){
+
+box.innerHTML=
+'<p class="small">لا توجد أفواج للروضة.</p>';
+
+return;
+
+}
+
+
+box.innerHTML=groups.map((g,i)=>{
+
+const info =
+getCrecheInfo(g.name);
+
+
+return `
+
+<div
+class="pricing-section"
+style="margin-top:10px"
+>
+
+<strong>
+🧸 ${esc(g.name)}
+</strong>
+
+<div class="grid" style="margin-top:10px">
+
+<div class="field">
+
+<label>
+السعر الشهري بالدج
+</label>
+
+<input
+type="number"
+min="0"
+value="${Number(info.price||0)}"
+data-creche-price="${i}"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+الفترة
+</label>
+
+<input
+value="${esc(g.period||"")}"
+disabled
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+وقت البداية
+</label>
+
+<input
+type="time"
+value="${esc(info.start||"08:00")}"
+data-creche-start="${i}"
+>
+
+</div>
+
+
+<div class="field">
+
+<label>
+وقت النهاية
+</label>
+
+<input
+type="time"
+value="${esc(info.end||"12:00")}"
+data-creche-end="${i}"
+>
+
+</div>
+
+</div>
+
+</div>
+
+`;
+
+}).join("");
+
+}
+
+
+/* =====================================================
+🔄 عرض كل إعدادات الأسعار
+===================================================== */
+
+function renderPricingAdmin(){
+
+renderSchoolPrices();
+renderSchoolSchedules();
+renderCrechePrices();
+
+}
+
+
+/* =====================================================
+💾 حفظ الأسعار والمواقيت
+===================================================== */
+
+function savePricingSettings(){
+
+settings.prices =
+settings.prices || {};
+
+settings.prices.school =
+settings.prices.school || {};
+
+settings.prices.schoolSchedules =
+settings.prices.schoolSchedules || {};
+
+settings.prices.creche =
+settings.prices.creche || {};
+
+
+/* أسعار المدرسة */
+
+document
+.querySelectorAll("[data-school-price]")
+.forEach(input=>{
+
+const level =
+input.getAttribute(
+"data-school-price"
+);
+
+settings.prices.school[level] =
+Number(input.value||0);
+
+});
+
+
+/* مواقيت المدرسة */
+
+document
+.querySelectorAll("[data-school-start]")
+.forEach(input=>{
+
+const key =
+input.getAttribute(
+"data-school-start"
+);
+
+settings.prices.schoolSchedules[key] =
+settings.prices.schoolSchedules[key] || {
+start:"08:00",
+end:"10:00"
+};
+
+settings.prices.schoolSchedules[key].start =
+input.value || "08:00";
+
+});
+
+
+document
+.querySelectorAll("[data-school-end]")
+.forEach(input=>{
+
+const key =
+input.getAttribute(
+"data-school-end"
+);
+
+settings.prices.schoolSchedules[key] =
+settings.prices.schoolSchedules[key] || {
+start:"08:00",
+end:"10:00"
+};
+
+settings.prices.schoolSchedules[key].end =
+input.value || "10:00";
+
+});
+
+
+/* الروضة */
+
+(settings.crecheGroups||[])
+.forEach((g,i)=>{
+
+const price =
+document.querySelector(
+`[data-creche-price="${i}"]`
+);
+
+const start =
+document.querySelector(
+`[data-creche-start="${i}"]`
+);
+
+const end =
+document.querySelector(
+`[data-creche-end="${i}"]`
+);
+
+
+settings.prices.creche[g.name]={
+price:Number(
+price?.value || 0
+),
+
+start:
+start?.value || "08:00",
+
+end:
+end?.value || "12:00"
+};
+
+});
+
+
+saveAll();
+
+}
+
+
+/* =====================================================
+📚 معلومات تظهر للتلميذ
+===================================================== */
+
+function showSchoolRegistrationInfo(){
+
+const form =
+document.getElementById(
+"registrationForm"
+);
+
+if(!form)return;
+
+
+const level =
+document.getElementById(
+"levelSelect"
+)?.value || "";
+
+
+const stage =
+document.getElementById(
+"stageSelect"
+)?.value || "";
+
+
+const specialization =
+document.getElementById(
+"specSelect"
+)?.value || "";
+
+
+const group =
+document.getElementById(
+"groupSelect"
+)?.value || "";
+
+
+let box =
+document.getElementById(
+"schoolRegistrationInfo"
+);
+
+
+if(!box){
+
+box=document.createElement("div");
+
+box.id="schoolRegistrationInfo";
+
+box.className=
+"user-registration-info";
+
+form.appendChild(box);
+
+}
+
+
+if(!level || !group){
+
+box.classList.add("hidden");
+
+return;
+
+}
+
+
+const price =
+getSchoolPrice(level);
+
+
+const schedule =
+getSchoolSchedule(
+stage,
+level,
+specialization,
+group
+);
+
+
+box.innerHTML=`
+
+📚 <strong>معلومات التسجيل</strong>
+
+<br>
+
+👨‍🎓 المستوى:
+<strong>${esc(level)}</strong>
+
+<br>
+
+👥 الفوج:
+<strong>${esc(group)}</strong>
+
+<br>
+
+🕐 التوقيت:
+<span class="info-time">
+${esc(schedule.start)}
+→
+${esc(schedule.end)}
+</span>
+
+<br>
+
+💰 السعر الشهري:
+<span class="info-price">
+${
+price > 0
+? price.toLocaleString("ar-DZ")+" دج"
+: "يحدد من الإدارة"
+}
+</span>
+
+`;
+
+
+box.classList.remove("hidden");
+
+}
+
+
+/* =====================================================
+🧸 معلومات تظهر لولي الطفل
+===================================================== */
+
+function showCrecheRegistrationInfo(){
+
+const form =
+document.getElementById(
+"registrationForm"
+);
+
+if(!form)return;
+
+
+const group =
+document.getElementById(
+"crecheGroupSelect"
+)?.value || "";
+
+
+let box =
+document.getElementById(
+"crecheRegistrationInfo"
+);
+
+
+if(!box){
+
+box=document.createElement("div");
+
+box.id="crecheRegistrationInfo";
+
+box.className=
+"user-registration-info";
+
+form.appendChild(box);
+
+}
+
+
+if(!group){
+
+box.classList.add("hidden");
+
+return;
+
+}
+
+
+const info =
+getCrecheInfo(group);
+
+
+box.innerHTML=`
+
+🧸 <strong>
+معلومات التسجيل في الروضة
+</strong>
+
+<br>
+
+👥 الفوج:
+<strong>${esc(group)}</strong>
+
+<br>
+
+🕐 التوقيت:
+<span class="info-time">
+${esc(info.start)}
+→
+${esc(info.end)}
+</span>
+
+<br>
+
+💰 السعر الشهري:
+<span class="info-price">
+${
+Number(info.price||0)>0
+? Number(info.price).toLocaleString("ar-DZ")+" دج"
+: "يحدد من الإدارة"
+}
+</span>
+
+`;
+
+
+box.classList.remove("hidden");
+
+}
+
+
+/* =====================================================
+🔄 مراقبة الاختيارات
+===================================================== */
+
+document.addEventListener(
+"change",
+function(e){
+
+if(e.target.id==="groupSelect"){
+
+showSchoolRegistrationInfo();
+
+}
+
+
+if(e.target.id==="crecheGroupSelect"){
+
+showCrecheRegistrationInfo();
+
+}
+
+}
+);
+
+
+/* =====================================================
+⚙️ ربط النظام بلوحة الإدارة
+===================================================== */
+
+const oldRenderAdmin =
+window.renderAdmin;
+
+
+window.renderAdmin=function(){
+
+if(typeof oldRenderAdmin==="function"){
+oldRenderAdmin();
+}
+
+createPricingAdmin();
+
+};
+
+
+/* =====================================================
+📝 إعادة إظهار المعلومات بعد إعادة بناء الاستمارة
+===================================================== */
+
+const oldRenderForm =
+window.renderForm;
+
+
+window.renderForm=function(){
+
+if(typeof oldRenderForm==="function"){
+oldRenderForm();
+}
+
+setTimeout(function(){
+
+if(currentType==="school"){
+showSchoolRegistrationInfo();
+}
+
+if(currentType==="creche"){
+showCrecheRegistrationInfo();
+}
+
+},30);
+
+};
+
+
+/* =====================================================
+💾 التأكد من حفظ النظام مع الإعدادات
+===================================================== */
+
+const oldSaveSettings =
+window.saveSettings;
+
+
+window.saveSettings=function(){
+
+if(typeof oldSaveSettings==="function"){
+oldSaveSettings();
+}
+
+savePricingSettings();
+
+};
+
+
+/* =====================================================
+🚀 تهيئة الإعدادات القديمة
+===================================================== */
+
+saveAll();
+
+
+})();
+
+</script>
+  
 </script>
 </body>
 </html>
