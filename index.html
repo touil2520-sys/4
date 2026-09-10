@@ -132,7 +132,37 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:22px}
       <div class="field"><label>تأكيد كلمة المرور الجديدة</label><input id="confirmAdminPassword" type="password" minlength="4" placeholder="أعد كتابة كلمة المرور الجديدة"></div>
       <div class="actions"><button type="button" class="btn btn-primary" onclick="changeAdminPassword()">🔑 تغيير كلمة المرور</button></div>
       <div class="small" style="margin-top:8px">كلمة المرور محفوظة على هذا المتصفح لهذا الموقع.</div>
-    </div>
+    </div> 
+    <!-- إدارة الأفواج -->
+<div class="info-card">
+<h3>👥 إضافة فوج جديد</h3>
+<p class="small">
+إذا امتلأ فوج، اختر القسم وأضف فوجًا جديدًا. سيُضاف تلقائيًا إلى جميع مواد القسم.
+</p>
+
+<div class="field">
+<label>القسم</label>
+<select id="newGroupClass">
+<option value="">اختر القسم</option>
+</select>
+</div>
+
+<div class="field">
+<label>اسم الفوج الجديد</label>
+<input id="newGroupName" type="text" placeholder="مثال: فوج 2">
+</div>
+
+<div class="field">
+<label>عدد التلاميذ المسموح</label>
+<input id="newGroupCapacity" type="number" min="1" value="15">
+</div>
+
+<div class="actions">
+<button type="button" class="btn btn-primary" onclick="addNewSchoolGroup()">
+➕ إضافة الفوج
+</button>
+</div>
+</div>
     <div class="info-card">
       <h3>📚 إدارة المدرسة</h3>
       <p class="small">أضف فوجًا جديدًا بسرعة دون تعديل كل مادة يدويًا. يمكنك أيضًا إدارة فوج القرآن الكريم من هنا.</p>
@@ -388,7 +418,112 @@ async function submitRegistration(e){
     registrations.push(data);saveAll();
     successBox.textContent="✅ تم إرسال طلب التسجيل بنجاح. شكرًا لكم!";
     successBox.classList.remove("hidden"); e.target.reset(); renderForm(); window.scrollTo({top:0,behavior:"smooth"});
-  }catch(error){
+  }catch(error){ 
+    function loadNewGroupClasses() {
+const select = document.getElementById("newGroupClass");
+if (!select || !settings || !settings.programs) return;
+
+const classes = [];
+
+settings.programs.forEach(p => {
+const key = JSON.stringify({
+stage: p.stage || "",
+level: p.level || "",
+specialization: p.specialization || ""
+});
+
+if (!classes.some(x => x.key === key)) {
+classes.push({
+key,
+stage: p.stage || "",
+level: p.level || "",
+specialization: p.specialization || ""
+});
+}
+});
+
+select.innerHTML =
+'<option value="">اختر القسم</option>' +
+classes.map(c => `
+<option value='${c.key}'>
+${esc(c.stage)} • ${esc(c.level)} • ${esc(c.specialization)}
+</option>
+`).join("");
+}
+
+
+function addNewSchoolGroup() {
+const select = document.getElementById("newGroupClass");
+const nameInput = document.getElementById("newGroupName");
+const capacityInput = document.getElementById("newGroupCapacity");
+
+if (!select || !select.value) {
+alert("⚠️ اختر القسم أولاً.");
+return;
+}
+
+const groupName = nameInput.value.trim();
+
+if (!groupName) {
+alert("⚠️ اكتب اسم الفوج.");
+return;
+}
+
+const capacity = Number(capacityInput.value) || 15;
+
+const selectedClass = JSON.parse(select.value);
+
+// الحصول على جميع مواد القسم
+const subjects = settings.programs.filter(p =>
+p.stage === selectedClass.stage &&
+p.level === selectedClass.level &&
+p.specialization === selectedClass.specialization
+);
+
+if (!subjects.length) {
+alert("❌ لم يتم العثور على مواد لهذا القسم.");
+return;
+}
+
+// التأكد أن الفوج غير موجود
+const alreadyExists = subjects.some(p => p.group === groupName);
+
+if (alreadyExists) {
+alert("⚠️ هذا الفوج موجود بالفعل في هذا القسم.");
+return;
+}
+
+// إضافة الفوج إلى جميع مواد القسم
+subjects.forEach(subject => {
+settings.programs.push({
+...subject,
+group: groupName,
+capacity: capacity
+});
+});
+
+// حفظ الإعدادات
+saveAll();
+
+// تحديث الإدارة
+if (typeof renderPrograms === "function") {
+renderPrograms();
+}
+
+if (typeof renderQuickClassSelect === "function") {
+renderQuickClassSelect();
+}
+
+loadNewGroupClasses();
+
+nameInput.value = "";
+
+alert(
+"✅ تم إنشاء " +
+groupName +
+" بنجاح وإضافته إلى جميع مواد القسم."
+);
+}
     console.error(error); alert("❌ تعذر إرسال الطلب. تأكد من اتصال الإنترنت وحاول مرة أخرى.");
     if(button){button.disabled=false;button.textContent="إرسال طلب التسجيل 🚀";}
   }
