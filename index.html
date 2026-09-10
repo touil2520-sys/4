@@ -638,54 +638,78 @@ document.getElementById("crecheLogo").src=LOGO_CRECHE;
   
 </script>
 <!-- =========================================================
-💰 إضافة مبسطة: الأسعار + الأوقات + سعر نقلية فاكرونة
+إضافة الأسعار + الأوقات + نقلية فاكرونة
+متوافقة مع index_school(1).html
 ========================================================= -->
 
 <style>
-.simple-pricing-box {
-margin-top: 15px;
-padding: 18px;
-border: 1px solid #e2e8f0;
-border-radius: 16px;
-background: #f8fafc;
+.price-manager {
+margin-top: 18px;
+padding: 20px;
+border-radius: 20px;
+background: #fff;
+box-shadow: 0 14px 40px rgba(16,35,65,.12);
 }
 
-.simple-pricing-box h3 {
-margin: 0 0 8px;
+.price-manager h3 {
+margin-top: 0;
+margin-bottom: 7px;
 }
 
-.simple-pricing-box label {
+.price-manager label {
 display: block;
-margin-top: 10px;
-font-weight: 600;
+margin-top: 12px;
+font-weight: 800;
 }
 
-.simple-pricing-box select,
-.simple-pricing-box input {
+.price-manager select,
+.price-manager input {
 width: 100%;
 box-sizing: border-box;
-padding: 11px;
-margin-top: 5px;
-border: 1px solid #cbd5e1;
-border-radius: 10px;
-font-size: 15px;
-background: white;
-}
-
-.simple-pricing-box .save-btn {
-width: 100%;
-margin-top: 15px;
+margin-top: 6px;
 padding: 12px;
-border: 0;
-border-radius: 10px;
-cursor: pointer;
-font-size: 15px;
-font-weight: bold;
+border: 1px solid #d9dfeb;
+border-radius: 12px;
+background: #fbfcfe;
 }
 
-.simple-success {
+.price-manager button {
+margin-top: 15px;
+}
+
+.transport-choice {
+margin-top: 15px;
+padding: 14px;
+border-radius: 14px;
+background: #f7f9fc;
+border: 1px solid #e5e9f0;
+}
+
+.transport-choice label {
+display: flex !important;
+align-items: center;
+gap: 9px;
+margin: 0 !important;
+cursor: pointer;
+}
+
+.transport-choice input {
+width: auto !important;
+margin: 0 !important;
+}
+
+.registration-details {
+margin-top: 12px;
+padding: 15px;
+border-radius: 14px;
+background: #f7f9fc;
+line-height: 1.9;
+}
+
+.saved-message {
 margin-top: 10px;
-font-weight: bold;
+color: #16834b;
+font-weight: 800;
 }
 </style>
 
@@ -693,183 +717,155 @@ font-weight: bold;
 (function () {
 
 /* =========================================================
-⚙️ الإعدادات
+الإعدادات
 ========================================================= */
 
-const SIMPLE_SETTINGS_KEY = "schoolSimplePricesV1";
-
-let simpleSettings =
-JSON.parse(localStorage.getItem(SIMPLE_SETTINGS_KEY) || "null") || {
-school: {},
-creche: {},
-transportPrice: 0
-};
-
-function saveSimpleSettings() {
-localStorage.setItem(
-SIMPLE_SETTINGS_KEY,
-JSON.stringify(simpleSettings)
-);
-
-/* إذا كان الموقع الأساسي يملك saveAll() */
-if (typeof window.saveAll === "function") {
-try {
-window.saveAll();
-} catch (e) {}
+if (!settings.schoolPricing) {
+settings.schoolPricing = {};
 }
+
+if (!settings.crechePricing) {
+settings.crechePricing = {};
+}
+
+if (typeof settings.transportPrice === "undefined") {
+settings.transportPrice = 0;
 }
 
 
 /* =========================================================
-🔧 الحصول على الأفواج
+أدوات
 ========================================================= */
 
-function getSchoolGroups() {
-
-let groups = [];
-
-if (typeof settings !== "undefined") {
-
-if (Array.isArray(settings.programs)) {
-settings.programs.forEach(function (p) {
-
-if (p && p.name) {
-groups.push(p.name);
-}
-
-if (p && Array.isArray(p.groups)) {
-p.groups.forEach(function (g) {
-if (typeof g === "string") {
-groups.push(g);
-} else if (g && g.name) {
-groups.push(g.name);
-}
-});
-}
-
-});
-}
-
-}
-
-return [...new Set(groups)];
+function uniqueValues(arr) {
+return [...new Set(
+arr
+.filter(Boolean)
+.map(x => String(x))
+)];
 }
 
 
-function getCrecheGroups() {
+function schoolGroups() {
 
-if (
-typeof settings !== "undefined" &&
-Array.isArray(settings.crecheGroups)
-) {
+if (!Array.isArray(settings.programs)) {
+return [];
+}
+
+return uniqueValues(
+settings.programs.map(p => p.group)
+);
+}
+
+
+function crecheGroups() {
+
+if (!Array.isArray(settings.crecheGroups)) {
+return [];
+}
+
 return settings.crecheGroups
-.map(function (g) {
-return typeof g === "string"
-? g
-: (g && g.name ? g.name : "");
-})
+.map(g => g.name)
 .filter(Boolean);
 }
 
-return [
-"الفوج الصباحي 1",
-"الفوج المسائي 1",
-"الفوج الكامل 1"
-];
-}
 
+function getSchoolPrice(group) {
 
-/* =========================================================
-🏫 إعدادات المدرسة
-========================================================= */
-
-function schoolGroupSettings(group) {
-
-if (!simpleSettings.school[group]) {
-simpleSettings.school[group] = {
+return settings.schoolPricing[group] || {
 start: "",
 end: "",
 price: ""
 };
 }
 
-return simpleSettings.school[group];
-}
 
+function getCrechePrice(group) {
 
-/* =========================================================
-🧸 إعدادات الروضة
-========================================================= */
-
-function crecheGroupSettings(group) {
-
-if (!simpleSettings.creche[group]) {
-simpleSettings.creche[group] = {
+return settings.crechePricing[group] || {
 start: "",
 end: "",
 price: ""
 };
 }
 
-return simpleSettings.creche[group];
+
+function ensureSchool(group) {
+
+if (!settings.schoolPricing[group]) {
+settings.schoolPricing[group] = {
+start: "",
+end: "",
+price: ""
+};
+}
+
+return settings.schoolPricing[group];
+}
+
+
+function ensureCreche(group) {
+
+if (!settings.crechePricing[group]) {
+settings.crechePricing[group] = {
+start: "",
+end: "",
+price: ""
+};
+}
+
+return settings.crechePricing[group];
 }
 
 
 /* =========================================================
-🏫 واجهة المدرسة
+🏫 إدارة أسعار وأوقات المدرسة
 ========================================================= */
 
-function renderSimpleSchoolEditor(container) {
+function renderSchoolPriceManager(container) {
 
-const groups = getSchoolGroups();
-
-if (!groups.length) {
-container.innerHTML = `
-<div class="simple-pricing-box">
-<h3>🏫 المدرسة</h3>
-<p>لا توجد أفواج مدرسية حاليًا.</p>
-</div>
-`;
-return;
-}
+const groups = schoolGroups();
 
 container.innerHTML = `
-<div class="simple-pricing-box">
+<div class="price-manager">
 
-<h3>🏫 المدرسة</h3>
+<h3>🏫 أسعار ومواقيت المدرسة</h3>
 
 <p class="small">
-اختر الفوج ثم حدد التوقيت والسعر.
+اختر الفوج، ثم حدد التوقيت والسعر.
 </p>
 
 <label>👥 الفوج</label>
 
-<select id="simpleSchoolGroup">
-${groups.map(function (g) {
-return `
-<option value="${escSimple(g)}">
-${escSimple(g)}
+<select id="priceSchoolGroup">
+<option value="">اختر الفوج</option>
+
+${groups.map(g => `
+<option value="${esc(g)}">
+${esc(g)}
 </option>
-`;
-}).join("")}
+`).join("")}
 </select>
 
 <label>🕐 وقت البداية</label>
+
 <input
+id="priceSchoolStart"
 type="time"
-id="simpleSchoolStart"
 >
 
 <label>🕐 وقت النهاية</label>
+
 <input
+id="priceSchoolEnd"
 type="time"
-id="simpleSchoolEnd"
 >
 
 <label>💰 السعر بالدج</label>
+
 <input
+id="priceSchoolValue"
 type="number"
-id="simpleSchoolPrice"
 min="0"
 step="50"
 placeholder="مثال: 2500"
@@ -877,108 +873,132 @@ placeholder="مثال: 2500"
 
 <button
 type="button"
-class="btn btn-primary save-btn"
-onclick="saveSimpleSchool()">
-💾 حفظ المدرسة
+class="btn btn-primary"
+onclick="saveSchoolPricing()">
+
+💾 حفظ
+
 </button>
 
-<div id="simpleSchoolSaved"
-class="simple-success"></div>
+<div id="schoolPriceSaved"
+class="saved-message"></div>
 
 </div>
 `;
 
-loadSimpleSchool();
+const select =
+document.getElementById("priceSchoolGroup");
+
+select.addEventListener(
+"change",
+loadSchoolPricing
+);
 }
 
 
-function loadSimpleSchool() {
+function loadSchoolPricing() {
 
-const select = document.getElementById("simpleSchoolGroup");
+const group =
+document.getElementById("priceSchoolGroup")?.value;
 
-if (!select) return;
+if (!group) return;
 
-const data = schoolGroupSettings(select.value);
+const data =
+getSchoolPrice(group);
 
-document.getElementById("simpleSchoolStart").value =
+document.getElementById("priceSchoolStart").value =
 data.start || "";
 
-document.getElementById("simpleSchoolEnd").value =
+document.getElementById("priceSchoolEnd").value =
 data.end || "";
 
-document.getElementById("simpleSchoolPrice").value =
+document.getElementById("priceSchoolValue").value =
 data.price || "";
 }
 
 
-function saveSimpleSchool() {
+function saveSchoolPricing() {
 
 const group =
-document.getElementById("simpleSchoolGroup").value;
+document.getElementById("priceSchoolGroup")?.value;
 
-const data = schoolGroupSettings(group);
+if (!group) {
+alert("اختر الفوج أولًا.");
+return;
+}
 
-data.start =
-document.getElementById("simpleSchoolStart").value;
+settings.schoolPricing[group] = {
 
-data.end =
-document.getElementById("simpleSchoolEnd").value;
+start:
+document.getElementById("priceSchoolStart").value,
 
-data.price =
-document.getElementById("simpleSchoolPrice").value;
+end:
+document.getElementById("priceSchoolEnd").value,
 
-saveSimpleSettings();
+price:
+document.getElementById("priceSchoolValue").value
+};
 
-document.getElementById("simpleSchoolSaved").textContent =
-"✅ تم حفظ توقيت وسعر الفوج";
+saveAll();
+
+document.getElementById("schoolPriceSaved").textContent =
+"✅ تم حفظ السعر والتوقيت";
 }
 
 
 /* =========================================================
-🧸 واجهة الروضة
+🧸 إدارة أسعار وأوقات الروضة
 ========================================================= */
 
-function renderSimpleCrecheEditor(container) {
+function renderCrechePriceManager(container) {
 
-const groups = getCrecheGroups();
+const groups = crecheGroups();
 
 container.innerHTML = `
-<div class="simple-pricing-box">
 
-<h3>🧸 الروضة</h3>
+<div class="price-manager">
+
+<h3>🧸 أسعار ومواقيت الروضة</h3>
 
 <p class="small">
-اختر الفوج ثم حدد توقيته وسعره.
+اختر الفوج، ثم حدد التوقيت والسعر.
 </p>
 
 <label>👥 الفوج</label>
 
-<select id="simpleCrecheGroup">
-${groups.map(function (g) {
-return `
-<option value="${escSimple(g)}">
-${escSimple(g)}
+<select id="priceCrecheGroup">
+
+<option value="">
+اختر الفوج
 </option>
-`;
-}).join("")}
+
+${groups.map(g => `
+<option value="${esc(g)}">
+${esc(g)}
+</option>
+`).join("")}
+
 </select>
 
 <label>🕐 وقت البداية</label>
+
 <input
+id="priceCrecheStart"
 type="time"
-id="simpleCrecheStart"
 >
 
 <label>🕐 وقت النهاية</label>
+
 <input
+id="priceCrecheEnd"
 type="time"
-id="simpleCrecheEnd"
 >
 
 <label>💰 سعر الروضة بالدج</label>
+
 <input
+id="priceCrecheValue"
 type="number"
-id="simpleCrechePrice"
 min="0"
 step="50"
 placeholder="مثال: 3000"
@@ -986,253 +1006,646 @@ placeholder="مثال: 3000"
 
 <button
 type="button"
-class="btn btn-primary save-btn"
-onclick="saveSimpleCreche()">
-💾 حفظ الروضة
+class="btn btn-purple"
+onclick="saveCrechePricing()">
+
+💾 حفظ
+
 </button>
 
-<div id="simpleCrecheSaved"
-class="simple-success"></div>
+<div
+id="crechePriceSaved"
+class="saved-message">
+</div>
 
 </div>
 
 
-<!-- 🚐 سعر النقلية مستقل -->
-<div class="simple-pricing-box">
+<!-- 🚐 النقلية مستقلة -->
+
+<div class="price-manager">
 
 <h3>🚐 نقلية فاكرونة</h3>
 
 <p class="small">
-هذا السعر مستقل عن سعر الروضة.
+سعر النقلية مستقل عن سعر الروضة.
 </p>
 
-<label>💰 سعر النقلية بالدج</label>
+<label>
+💰 سعر النقلية بالدج
+</label>
 
 <input
+id="priceTransportValue"
 type="number"
-id="simpleTransportPrice"
 min="0"
 step="50"
 placeholder="مثال: 1500"
-value="${simpleSettings.transportPrice || ""}"
+value="${settings.transportPrice || ""}"
 >
 
 <button
 type="button"
-class="btn btn-primary save-btn"
-onclick="saveSimpleTransport()">
+class="btn btn-primary"
+onclick="saveTransportPricing()">
+
 💾 حفظ سعر النقلية
+
 </button>
 
-<div id="simpleTransportSaved"
-class="simple-success"></div>
+<div
+id="transportPriceSaved"
+class="saved-message">
+</div>
 
 </div>
 `;
 
-loadSimpleCreche();
+const select =
+document.getElementById("priceCrecheGroup");
+
+select.addEventListener(
+"change",
+loadCrechePricing
+);
 }
 
 
-function loadSimpleCreche() {
+function loadCrechePricing() {
 
-const select =
-document.getElementById("simpleCrecheGroup");
+const group =
+document.getElementById("priceCrecheGroup")?.value;
 
-if (!select) return;
+if (!group) return;
 
-const data = crecheGroupSettings(select.value);
+const data =
+getCrechePrice(group);
 
-document.getElementById("simpleCrecheStart").value =
+document.getElementById("priceCrecheStart").value =
 data.start || "";
 
-document.getElementById("simpleCrecheEnd").value =
+document.getElementById("priceCrecheEnd").value =
 data.end || "";
 
-document.getElementById("simpleCrechePrice").value =
+document.getElementById("priceCrecheValue").value =
 data.price || "";
 }
 
 
-function saveSimpleCreche() {
+function saveCrechePricing() {
 
 const group =
-document.getElementById("simpleCrecheGroup").value;
+document.getElementById("priceCrecheGroup")?.value;
 
-const data = crecheGroupSettings(group);
+if (!group) {
+alert("اختر الفوج أولًا.");
+return;
+}
 
-data.start =
-document.getElementById("simpleCrecheStart").value;
+settings.crechePricing[group] = {
 
-data.end =
-document.getElementById("simpleCrecheEnd").value;
+start:
+document.getElementById("priceCrecheStart").value,
 
-data.price =
-document.getElementById("simpleCrechePrice").value;
+end:
+document.getElementById("priceCrecheEnd").value,
 
-saveSimpleSettings();
+price:
+document.getElementById("priceCrecheValue").value
+};
 
-document.getElementById("simpleCrecheSaved").textContent =
-"✅ تم حفظ توقيت وسعر الفوج";
+saveAll();
+
+document.getElementById("crechePriceSaved").textContent =
+"✅ تم حفظ السعر والتوقيت";
 }
 
 
-function saveSimpleTransport() {
+function saveTransportPricing() {
 
 const price =
 Number(
-document.getElementById("simpleTransportPrice").value
+document.getElementById("priceTransportValue").value
 );
 
-if (price < 0 || isNaN(price)) {
+if (isNaN(price) || price < 0) {
 alert("أدخل سعرًا صحيحًا.");
 return;
 }
 
-simpleSettings.transportPrice = price;
+settings.transportPrice = price;
 
-saveSimpleSettings();
+saveAll();
 
-document.getElementById("simpleTransportSaved").textContent =
+document.getElementById("transportPriceSaved").textContent =
 "✅ تم حفظ سعر النقلية";
 }
 
 
 /* =========================================================
-🧩 حماية النصوص
+⚙️ إضافة الإدارة
 ========================================================= */
 
-function escSimple(value) {
+function addPricingToAdmin() {
 
-return String(value)
-.replace(/&/g, "&amp;")
-.replace(/</g, "&lt;")
-.replace(/>/g, "&gt;")
-.replace(/"/g, "&quot;")
-.replace(/'/g, "&#039;");
-}
-
-
-/* =========================================================
-⚙️ إضافة القسم إلى لوحة الإدارة
-========================================================= */
-
-function addSimplePricingEditor() {
-
-const adminPage =
+const admin =
 document.getElementById("adminPage");
 
-if (!adminPage) return;
+if (!admin) return;
 
 if (
 document.getElementById(
-"simplePricingEditor"
+"simplePricingManager"
 )
 ) return;
 
 const grid =
-adminPage.querySelector(".admin-grid") ||
-adminPage;
+admin.querySelector(".admin-grid");
 
-const wrapper =
+if (!grid) return;
+
+const card =
 document.createElement("div");
 
-wrapper.id = "simplePricingEditor";
+card.id = "simplePricingManager";
 
-wrapper.innerHTML = `
-<div class="info-card">
+card.className = "info-card";
 
-<h2>💰 الأسعار والمواقيت</h2>
+card.innerHTML = `
+
+<h3>💰 الأسعار والمواقيت</h3>
 
 <p class="small">
 إدارة بسيطة للأسعار والأوقات.
-اختر الفوج ثم عدّل التوقيت والسعر.
 </p>
 
-<div id="simpleSchoolEditor"></div>
+<div id="schoolPricingArea"></div>
 
-<div id="simpleCrecheEditor"></div>
+<div id="crechePricingArea"></div>
+`;
+
+grid.appendChild(card);
+
+renderSchoolPriceManager(
+document.getElementById(
+"schoolPricingArea"
+)
+);
+
+renderCrechePriceManager(
+document.getElementById(
+"crechePricingArea"
+)
+);
+}
+
+
+/* =========================================================
+🧸 إضافة اختيار النقل إلى نموذج الروضة
+========================================================= */
+
+const originalRenderForm =
+window.renderForm;
+
+
+window.renderForm = function () {
+
+originalRenderForm.apply(
+this,
+arguments
+);
+
+const form =
+document.getElementById(
+"registrationForm"
+);
+
+if (!form || currentType !== "creche") {
+return;
+}
+
+if (
+document.getElementById(
+"fakarounaChoice"
+)
+) {
+return;
+}
+
+const actions =
+form.querySelector(".actions");
+
+if (!actions) return;
+
+const box =
+document.createElement("div");
+
+box.id = "fakarounaChoice";
+
+box.className =
+"field full transport-choice";
+
+box.innerHTML = `
+
+<label>
+
+<input
+type="checkbox"
+id="fakarounaTransport"
+>
+
+🚐 أريد النقل بواسطة فاكرونة
+</label>
+
+<div class="small" style="margin-top:7px">
+
+سيتم عرض سعر النقلية بعد نجاح التسجيل.
 
 </div>
 `;
 
-grid.appendChild(wrapper);
-
-renderSimpleSchoolEditor(
-document.getElementById("simpleSchoolEditor")
+form.insertBefore(
+box,
+actions
 );
 
-renderSimpleCrecheEditor(
-document.getElementById("simpleCrecheEditor")
+/* نربط النموذج بالدالة المطورة */
+form.onsubmit =
+enhancedSubmitRegistration;
+};
+
+
+/* =========================================================
+📤 إرسال التسجيل وإظهار السعر بعد النجاح
+========================================================= */
+
+const originalSubmit =
+window.submitRegistration;
+
+
+async function enhancedSubmitRegistration(e) {
+
+e.preventDefault();
+
+const form = e.target;
+
+/*
+نخفي رسالة النجاح القديمة حتى لا يحدث
+خلط بين طلب قديم وطلب جديد.
+*/
+
+const success =
+document.getElementById("successBox");
+
+if (success) {
+success.classList.add("hidden");
+success.innerHTML = "";
+}
+
+
+let details = null;
+
+
+/* =========================
+🧸 بيانات الروضة
+========================= */
+
+if (currentType === "creche") {
+
+const group =
+document.getElementById(
+"crecheGroupSelect"
+)?.value || "";
+
+const transport =
+document.getElementById(
+"fakarounaTransport"
+)?.checked || false;
+
+const pricing =
+getCrechePrice(group);
+
+details = {
+
+type: "creche",
+
+group: group,
+
+start: pricing.start || "",
+
+end: pricing.end || "",
+
+price: pricing.price || "",
+
+transport: transport,
+
+transportPrice:
+transport
+? Number(settings.transportPrice || 0)
+: 0
+};
+
+
+/*
+نضيف المعلومات إلى النموذج حتى تصل
+أيضًا إلى Google Sheets.
+*/
+
+addHiddenField(
+form,
+"transport",
+transport
+? "نعم - فاكرونة"
+: "لا"
 );
 
-const schoolSelect =
-document.getElementById("simpleSchoolGroup");
+addHiddenField(
+form,
+"transportPrice",
+transport
+? String(settings.transportPrice || 0)
+: "0"
+);
 
-if (schoolSelect) {
-schoolSelect.addEventListener(
-"change",
-loadSimpleSchool
+addHiddenField(
+form,
+"schedule",
+details.start && details.end
+? details.start + " → " + details.end
+: ""
+);
+
+addHiddenField(
+form,
+"price",
+String(details.price || "")
 );
 }
 
-const crecheSelect =
-document.getElementById("simpleCrecheGroup");
 
-if (crecheSelect) {
-crecheSelect.addEventListener(
-"change",
-loadSimpleCreche
+/* =========================
+🏫 بيانات المدرسة
+========================= */
+
+if (currentType === "school") {
+
+const group =
+document.getElementById(
+"groupSelect"
+)?.value || "";
+
+const pricing =
+getSchoolPrice(group);
+
+details = {
+
+type: "school",
+
+group: group,
+
+start: pricing.start || "",
+
+end: pricing.end || "",
+
+price: pricing.price || ""
+};
+
+
+addHiddenField(
+form,
+"schedule",
+details.start && details.end
+? details.start + " → " + details.end
+: ""
 );
+
+addHiddenField(
+form,
+"price",
+String(details.price || "")
+);
+}
+
+
+/*
+نستعمل دالة الإرسال الأصلية حتى لا نخرب
+Google Sheets أو بقية نظام الموقع.
+*/
+
+await originalSubmit.call(
+this,
+e
+);
+
+
+/*
+إذا ظهرت رسالة النجاح، نعيد تصميمها
+بالمعلومات التي حُفظت قبل إعادة بناء النموذج.
+*/
+
+const successAfter =
+document.getElementById(
+"successBox"
+);
+
+if (
+successAfter &&
+!successAfter.classList.contains("hidden") &&
+details
+) {
+
+if (details.type === "creche") {
+
+let html = `
+
+<div>
+<strong>
+🎉 تم تسجيل الطفل بنجاح!
+</strong>
+</div>
+
+<div class="registration-details">
+
+👥 <strong>الفوج:</strong>
+${esc(details.group)}
+
+<br>
+
+🕐 <strong>التوقيت:</strong>
+${
+details.start && details.end
+? esc(details.start) +
+" → " +
+esc(details.end)
+: "لم يتم تحديده"
+}
+
+<br>
+
+💰 <strong>سعر الروضة:</strong>
+${
+details.price
+? esc(details.price) + " دج"
+: "لم يتم تحديده"
+}
+`;
+
+if (details.transport) {
+
+html += `
+
+<br>
+
+🚐 <strong>النقل:</strong>
+نعم، بواسطة فاكرونة
+
+<br>
+
+💰 <strong>سعر النقلية:</strong>
+${details.transportPrice} دج
+`;
+} else {
+
+html += `
+
+<br>
+
+🚐 <strong>النقل:</strong>
+لا
+`;
+}
+
+html += `
+</div>
+`;
+
+successAfter.innerHTML =
+html;
+
+} else {
+
+successAfter.innerHTML = `
+
+<div>
+<strong>
+🎉 تم تسجيل التلميذ بنجاح!
+</strong>
+</div>
+
+<div class="registration-details">
+
+👥 <strong>الفوج:</strong>
+${esc(details.group)}
+
+<br>
+
+🕐 <strong>التوقيت:</strong>
+${
+details.start && details.end
+? esc(details.start) +
+" → " +
+esc(details.end)
+: "لم يتم تحديده"
+}
+
+<br>
+
+💰 <strong>السعر:</strong>
+${
+details.price
+? esc(details.price) + " دج"
+: "لم يتم تحديده"
+}
+
+</div>
+`;
+}
 }
 }
 
 
 /* =========================================================
-🔗 جعل الدوال متاحة
+➕ إضافة hidden input
 ========================================================= */
 
-window.saveSimpleSchool =
-saveSimpleSchool;
+function addHiddenField(
+form,
+name,
+value
+) {
 
-window.saveSimpleCreche =
-saveSimpleCreche;
+let input =
+form.querySelector(
+'input[data-addon-field="' +
+name +
+'"]'
+);
 
-window.saveSimpleTransport =
-saveSimpleTransport;
+if (!input) {
+
+input =
+document.createElement(
+"input"
+);
+
+input.type = "hidden";
+
+input.name = name;
+
+input.setAttribute(
+"data-addon-field",
+name
+);
+
+form.appendChild(input);
+}
+
+input.value = value;
+}
 
 
 /* =========================================================
-🔄 عند فتح الإدارة
+⚙️ الإدارة
 ========================================================= */
 
-const oldRenderAdmin =
+const originalRenderAdmin =
 window.renderAdmin;
 
-if (typeof oldRenderAdmin === "function") {
 
 window.renderAdmin = function () {
 
-oldRenderAdmin.apply(
+originalRenderAdmin.apply(
 this,
 arguments
 );
 
 setTimeout(
-addSimplePricingEditor,
-50
+addPricingToAdmin,
+30
 );
 };
 
-}
+
+/* =========================================================
+🔗 الدوال العامة
+========================================================= */
+
+window.saveSchoolPricing =
+saveSchoolPricing;
+
+window.saveCrechePricing =
+saveCrechePricing;
+
+window.saveTransportPricing =
+saveTransportPricing;
 
 
 /* =========================================================
-🚀 محاولة أولى
+🚀 إذا كانت الإدارة مفتوحة
 ========================================================= */
 
 setTimeout(
-addSimplePricingEditor,
+addPricingToAdmin,
 100
 );
 
