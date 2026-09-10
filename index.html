@@ -637,5 +637,793 @@ document.getElementById("schoolLogo").src=LOGO_SCHOOL;
 document.getElementById("crecheLogo").src=LOGO_CRECHE;
   
 </script>
+<style>
+/* ================================
+إضافة السعر والتوقيت والنقل
+تظهر بعد نجاح التسجيل فقط
+================================ */
+
+.registration-result{
+margin-top:18px;
+padding:20px;
+border-radius:20px;
+background:linear-gradient(135deg,#eef7ff,#f8f2ff);
+border:1px solid #dbe7f5;
+box-shadow:0 10px 28px rgba(20,40,80,.08);
+}
+
+.registration-result h3{
+margin:0 0 14px;
+font-size:21px;
+}
+
+.registration-result .result-row{
+display:flex;
+justify-content:space-between;
+gap:15px;
+padding:9px 0;
+border-bottom:1px solid #e5eaf2;
+}
+
+.registration-result .result-row:last-child{
+border-bottom:0;
+}
+
+.registration-result .result-label{
+font-weight:700;
+color:#687386;
+}
+
+.registration-result .result-value{
+font-weight:900;
+color:#172033;
+text-align:left;
+}
+
+.transport-box{
+margin-top:14px;
+padding:13px;
+border-radius:14px;
+background:#fff;
+border:1px solid #e5e9f0;
+}
+</style>
+
+<script>
+(function(){
+
+/* =========================================
+إعدادات السعر والتوقيت
+========================================= */
+
+settings.schoolPrices = settings.schoolPrices || {};
+settings.schoolSchedules = settings.schoolSchedules || {};
+
+settings.crecheGroups = (settings.crecheGroups || []).map(function(g){
+return Object.assign({
+startTime:"08:00",
+endTime:"12:00",
+price:0
+},g);
+});
+
+/* =========================================
+البحث عن توقيت فوج المدرسة
+========================================= */
+
+window.getSchoolSchedule = function(stage,level,specialization,group){
+
+var key = [stage,level,specialization,group].join("|||");
+
+return settings.schoolSchedules[key] || {
+startTime:"08:00",
+endTime:"10:00"
+};
+};
+
+/* =========================================
+سعر المدرسة حسب المستوى
+========================================= */
+
+window.getSchoolPrice = function(level){
+return Number(settings.schoolPrices[level] || 0);
+};
+
+/* =========================================
+بطاقة النتيجة بعد التسجيل
+========================================= */
+
+window.showRegistrationResult = function(data){
+
+var box = document.getElementById("successBox");
+
+if(!box) return;
+
+var priceText =
+Number(data.price || 0) > 0
+? Number(data.price).toLocaleString("ar-DZ") + " دج"
+: "يحدد من الإدارة";
+
+var html = "";
+
+html += '<div class="registration-result">';
+
+html += '<h3>🎉 تفاصيل التسجيل</h3>';
+
+html += '<div class="result-row">';
+html += '<span class="result-label">المؤسسة</span>';
+html += '<span class="result-value">';
+html += data.type === "school"
+? "Louei School 📚"
+: "Crèche Loulou 🧸";
+html += '</span>';
+html += '</div>';
+
+if(data.level){
+html += '<div class="result-row">';
+html += '<span class="result-label">المستوى</span>';
+html += '<span class="result-value">' + esc(data.level) + '</span>';
+html += '</div>';
+}
+
+if(data.group){
+html += '<div class="result-row">';
+html += '<span class="result-label">الفوج</span>';
+html += '<span class="result-value">' + esc(data.group) + '</span>';
+html += '</div>';
+}
+
+html += '<div class="result-row">';
+html += '<span class="result-label">🕐 التوقيت</span>';
+html += '<span class="result-value">';
+html += esc(data.startTime || "غير محدد");
+html += ' → ';
+html += esc(data.endTime || "غير محدد");
+html += '</span>';
+html += '</div>';
+
+html += '<div class="result-row">';
+html += '<span class="result-label">💰 السعر</span>';
+html += '<span class="result-value">' + esc(priceText) + '</span>';
+html += '</div>';
+
+if(data.type === "creche"){
+
+html += '<div class="transport-box">';
+html += '<b>🚐 خدمة النقل بواسطة فاكرونة</b><br>';
+html += '<span>';
+html += data.transport === "نعم"
+? "✅ تم اختيار النقل"
+: "❌ لم يتم اختيار النقل";
+html += '</span>';
+html += '</div>';
+
+}
+
+html += '</div>';
+
+box.innerHTML = html;
+box.classList.remove("hidden");
+
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
+};
+
+
+/* =========================================
+تعديل عرض نموذج المدرسة
+لا يظهر السعر أو الوقت هنا
+========================================= */
+
+var oldUpdateSchoolSummary =
+window.updateSchoolSummary;
+
+window.updateSchoolSummary = function(){
+
+/*
+نترك الاختيار يعمل بشكل طبيعي،
+لكن لا نعرض السعر والتوقيت قبل التسجيل.
+*/
+
+var box = document.getElementById("selectionSummary");
+
+if(box){
+box.classList.add("hidden");
+box.innerHTML = "";
+}
+
+};
+
+
+/* =========================================
+تعديل عرض نموذج الروضة
+لا يظهر السعر أو الوقت هنا
+========================================= */
+
+var oldUpdateCrecheSummary =
+window.updateCrecheSummary;
+
+window.updateCrecheSummary = function(){
+
+var box = document.getElementById("selectionSummary");
+
+if(box){
+box.classList.add("hidden");
+box.innerHTML = "";
+}
+
+};
+
+
+/* =========================================
+إنشاء اختيار النقل للروضة
+========================================= */
+
+var oldRenderForm = window.renderForm;
+
+window.renderForm = function(){
+
+if(typeof oldRenderForm === "function"){
+oldRenderForm();
+}
+
+if(window.currentType !== "creche"){
+return;
+}
+
+var form = document.getElementById("registrationForm");
+
+if(!form) return;
+
+var actions = form.querySelector(".actions");
+
+if(!actions) return;
+
+var oldTransport = document.getElementById("transportSelect");
+
+if(oldTransport){
+return;
+}
+
+var transportBox = document.createElement("div");
+
+transportBox.className = "field full";
+
+transportBox.innerHTML = `
+<label>🚐 خدمة النقل</label>
+
+<label style="
+display:flex;
+align-items:center;
+gap:10px;
+padding:13px;
+border:1px solid #d9dfeb;
+border-radius:12px;
+background:#fbfcfe;
+cursor:pointer;
+">
+
+<input
+id="transportSelect"
+type="checkbox"
+name="transportChoice"
+value="نعم"
+style="width:auto"
+>
+
+أريد استعمال خدمة النقل بواسطة فاكرونة 🚐
+
+</label>
+`;
+
+form.insertBefore(transportBox,actions);
+
+};
+
+
+/* =========================================
+اعتراض التسجيل وإضافة السعر والتوقيت
+========================================= */
+
+var originalSubmit = window.submitRegistration;
+
+window.submitRegistration = async function(e){
+
+e.preventDefault();
+
+var type = window.currentType;
+
+var data = {
+type:type
+};
+
+if(type === "school"){
+
+data.stage =
+document.getElementById("stageSelect")?.value || "";
+
+data.level =
+document.getElementById("levelSelect")?.value || "";
+
+data.specialization =
+document.getElementById("specSelect")?.value || "";
+
+data.subject =
+document.getElementById("subjectSelect")?.value || "";
+
+data.group =
+document.getElementById("groupSelect")?.value || "";
+
+var schedule =
+getSchoolSchedule(
+data.stage,
+data.level,
+data.specialization,
+data.group
+);
+
+data.startTime = schedule.startTime;
+data.endTime = schedule.endTime;
+
+data.price = getSchoolPrice(data.level);
+
+}
+
+else if(type === "creche"){
+
+data.period =
+document.getElementById("periodSelect")?.value || "";
+
+data.group =
+document.getElementById("crecheGroupSelect")?.value || "";
+
+var group =
+settings.crecheGroups.find(function(g){
+return g.name === data.group &&
+g.period === data.period;
+});
+
+data.startTime =
+group?.startTime || "08:00";
+
+data.endTime =
+group?.endTime || "12:00";
+
+data.price =
+Number(group?.price || 0);
+
+data.transport =
+document.getElementById("transportSelect")?.checked
+? "نعم"
+: "لا";
+}
+
+/*
+نستدعي التسجيل الأصلي.
+السعر والتوقيت موجودان داخل data
+وسيتم إظهارهما بعد نجاح العملية.
+*/
+
+var oldSuccess =
+document.getElementById("successBox");
+
+if(oldSuccess){
+oldSuccess.classList.add("hidden");
+}
+
+try{
+
+/*
+نحاول إرسال البيانات بالطريقة الأصلية.
+*/
+
+var button =
+e.target.querySelector('button[type="submit"]');
+
+if(button){
+button.disabled = true;
+button.textContent = "جاري إرسال الطلب...";
+}
+
+var fd = new FormData(e.target);
+
+Object.keys(data).forEach(function(key){
+fd.set(key,data[key]);
+});
+
+var payload = {};
+
+fd.forEach(function(value,key){
+payload[key] = value;
+});
+
+payload.id = Date.now();
+payload.type = type;
+payload.date = new Date().toLocaleString("ar-DZ");
+
+await fetch(
+GOOGLE_SCRIPT_URL,
+{
+method:"POST",
+mode:"no-cors",
+headers:{
+"Content-Type":
+"application/x-www-form-urlencoded;charset=UTF-8"
+},
+body:
+"payload=" +
+encodeURIComponent(JSON.stringify(payload))
+}
+);
+
+registrations.push(payload);
+saveAll();
+
+showRegistrationResult(payload);
+
+e.target.reset();
+
+if(button){
+button.disabled = false;
+}
+
+}catch(error){
+
+console.error(error);
+
+alert(
+"❌ تعذر إرسال الطلب. تأكد من اتصال الإنترنت وحاول مرة أخرى."
+);
+
+}
+
+};
+
+
+/* =========================================
+إضافة إعدادات الأسعار والمواقيت للإدارة
+========================================= */
+
+var oldRenderAdmin =
+window.renderAdmin;
+
+window.renderAdmin = function(){
+
+if(typeof oldRenderAdmin === "function"){
+oldRenderAdmin();
+}
+
+createPricingSettings();
+
+};
+
+
+function createPricingSettings(){
+
+var adminCards =
+document.querySelectorAll("#adminPage .info-card");
+
+if(!adminCards.length){
+return;
+}
+
+var old =
+document.getElementById("newPricingSettings");
+
+if(old){
+old.remove();
+}
+
+var card =
+document.createElement("div");
+
+card.className = "info-card";
+
+card.id = "newPricingSettings";
+
+var html = "";
+
+html += "<h3>💰 الأسعار والمواقيت</h3>";
+
+html +=
+'<p class="small">يمكن للإدارة تعديل أسعار المدرسة، وتوقيت أفواج المدرسة، وأسعار ومواقيت أفواج الروضة.</p>';
+
+html += "<h4>📚 أسعار المدرسة</h4>";
+
+var levels =
+[...new Set(
+settings.programs.map(function(p){
+return p.level;
+})
+)];
+
+levels.forEach(function(level){
+
+html += `
+<div class="field" style="margin-bottom:10px">
+<label>${esc(level)}</label>
+
+<input
+type="number"
+min="0"
+value="${Number(settings.schoolPrices[level] || 0)}"
+placeholder="السعر بالدج"
+data-school-price="${esc(level)}"
+>
+</div>
+`;
+
+});
+
+html += "<h4>🕐 مواقيت المدرسة</h4>";
+
+var uniqueGroups = [];
+
+settings.programs.forEach(function(p){
+
+var key =
+[p.stage,p.level,p.specialization,p.group]
+.join("|||");
+
+if(
+!uniqueGroups.some(function(x){
+return x.key === key;
+})
+){
+
+uniqueGroups.push({
+key:key,
+stage:p.stage,
+level:p.level,
+specialization:p.specialization,
+group:p.group
+});
+
+}
+
+});
+
+uniqueGroups.forEach(function(g){
+
+var t =
+getSchoolSchedule(
+g.stage,
+g.level,
+g.specialization,
+g.group
+);
+
+html += `
+<div style="
+border:1px solid #e5e9f0;
+border-radius:14px;
+padding:12px;
+margin:10px 0
+">
+
+<b>👥 ${esc(g.group)}</b>
+
+<div class="small">
+${esc(g.level)} • ${esc(g.specialization)}
+</div>
+
+<div class="grid" style="margin-top:10px">
+
+<div class="field">
+<label>من</label>
+<input
+type="time"
+value="${esc(t.startTime)}"
+data-school-time-start="${esc(g.key)}"
+>
+</div>
+
+<div class="field">
+<label>إلى</label>
+<input
+type="time"
+value="${esc(t.endTime)}"
+data-school-time-end="${esc(g.key)}"
+>
+</div>
+
+</div>
+
+</div>
+`;
+
+});
+
+html += "<h4>🧸 الروضة</h4>";
+
+settings.crecheGroups.forEach(function(g,i){
+
+html += `
+<div style="
+border:1px solid #e5e9f0;
+border-radius:14px;
+padding:12px;
+margin:10px 0
+">
+
+<b>🧸 ${esc(g.name)}</b>
+
+<div class="small">
+${esc(g.period)}
+</div>
+
+<div class="grid" style="margin-top:10px">
+
+<div class="field">
+<label>من</label>
+<input
+type="time"
+value="${esc(g.startTime || "08:00")}"
+data-creche-start="${i}"
+>
+</div>
+
+<div class="field">
+<label>إلى</label>
+<input
+type="time"
+value="${esc(g.endTime || "12:00")}"
+data-creche-end="${i}"
+>
+</div>
+
+<div class="field full">
+<label>السعر الشهري بالدج</label>
+<input
+type="number"
+min="0"
+value="${Number(g.price || 0)}"
+data-creche-price="${i}"
+>
+</div>
+
+</div>
+
+</div>
+`;
+
+});
+
+html += `
+<div class="actions">
+
+<button
+type="button"
+class="btn btn-primary"
+id="saveNewPricing"
+>
+💾 حفظ الأسعار والمواقيت
+</button>
+
+</div>
+`;
+
+card.innerHTML = html;
+
+adminCards[adminCards.length-1]
+.parentNode
+.appendChild(card);
+
+document
+.getElementById("saveNewPricing")
+.onclick = saveNewPricing;
+
+}
+
+
+function saveNewPricing(){
+
+/* أسعار المدرسة */
+
+document
+.querySelectorAll("[data-school-price]")
+.forEach(function(input){
+
+var level =
+input.getAttribute("data-school-price");
+
+settings.schoolPrices[level] =
+Number(input.value || 0);
+
+});
+
+
+/* مواقيت المدرسة */
+
+document
+.querySelectorAll("[data-school-time-start]")
+.forEach(function(input){
+
+var key =
+input.getAttribute("data-school-time-start");
+
+settings.schoolSchedules[key] =
+settings.schoolSchedules[key] ||
+{
+startTime:"08:00",
+endTime:"10:00"
+};
+
+settings.schoolSchedules[key].startTime =
+input.value;
+
+});
+
+document
+.querySelectorAll("[data-school-time-end]")
+.forEach(function(input){
+
+var key =
+input.getAttribute("data-school-time-end");
+
+settings.schoolSchedules[key] =
+settings.schoolSchedules[key] ||
+{
+startTime:"08:00",
+endTime:"10:00"
+};
+
+settings.schoolSchedules[key].endTime =
+input.value;
+
+});
+
+
+/* الروضة */
+
+document
+.querySelectorAll("[data-creche-start]")
+.forEach(function(input){
+
+var i =
+Number(input.getAttribute("data-creche-start"));
+
+settings.crecheGroups[i].startTime =
+input.value;
+
+});
+
+document
+.querySelectorAll("[data-creche-end]")
+.forEach(function(input){
+
+var i =
+Number(input.getAttribute("data-creche-end"));
+
+settings.crecheGroups[i].endTime =
+input.value;
+
+});
+
+document
+.querySelectorAll("[data-creche-price]")
+.forEach(function(input){
+
+var i =
+Number(input.getAttribute("data-creche-price"));
+
+settings.crecheGroups[i].price =
+Number(input.value || 0);
+
+});
+
+
+saveAll();
+
+alert("✅ تم حفظ الأسعار والمواقيت بنجاح");
+
+createPricingSettings();
+
+}
+
+})();
+</script>
 </body>
 </html>
