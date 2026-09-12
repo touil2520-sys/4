@@ -816,55 +816,56 @@ price: ""
 
 return settings.crechePricing[group];
 }
-
-
-/* =========================================================
-🏫 إدارة أسعار وأوقات المدرسة
-========================================================= */
 function renderPricingEditor(){
 
 const box = document.getElementById("pricingEditor");
 
 if(!box) return;
 
-let html = `
-<div class="card">
-<h3>🏫 أسعار ومواقيت المدرسة</h3>
+if(!settings.schoolPrices)
+settings.schoolPrices = {};
 
-<p class="muted">
-اختر المستوى والفوج، ثم حدد وقت البداية والنهاية والسعر.
-</p>
+if(!settings.schoolSchedules)
+settings.schoolSchedules = {};
 
-<label>📚 المستوى والفوج</label>
-
-<select id="schoolPricingSelect"
-onchange="loadSchoolPricingSelection()">
-
-<option value="">اختر المستوى والفوج</option>
-`;
-
-/*
-* إنشاء قائمة تحتوي على كل البرامج
-*/
 const programs = Array.isArray(settings.programs)
 ? settings.programs
 : [];
 
+let html = `
+<h4>🏫 أسعار ومواقيت المدرسة</h4>
+
+<p class="small">
+اختر المستوى والفوج والمادة، ثم حدد التوقيت والسعر.
+</p>
+
+<div class="field">
+
+<label>📚 اختر المستوى والفوج</label>
+
+<select id="schoolPricingSelect"
+onchange="loadSchoolPricing()">
+
+<option value="">
+اختر المستوى والفوج
+</option>
+`;
+
 programs.forEach((p,index)=>{
 
-const label = [
+const text = [
 p.stage,
 p.level,
 p.specialization,
 p.subject,
 p.group
 ]
-.filter(x => x && String(x).trim() !== "")
+.filter(Boolean)
 .join(" ← ");
 
 html += `
 <option value="${index}">
-${esc(label)}
+${esc(text)}
 </option>
 `;
 
@@ -873,37 +874,145 @@ ${esc(label)}
 html += `
 </select>
 
+</div>
+
 <div id="schoolPricingFields"
-style="display:none;margin-top:18px;">
+style="display:none;margin-top:18px">
+
+<div class="grid">
+
+<div class="field">
 
 <label>⏰ وقت البداية</label>
 
 <input
+id="schoolPricingStart"
 type="time"
-id="schoolStartTime"
 >
+
+</div>
+
+<div class="field">
 
 <label>⏰ وقت النهاية</label>
 
 <input
+id="schoolPricingEnd"
 type="time"
-id="schoolEndTime"
 >
 
-<label>💰 السعر</label>
+</div>
+
+<div class="field full">
+
+<label>💰 السعر الشهري</label>
 
 <input
+id="schoolPricingPrice"
 type="number"
-id="schoolPrice"
 min="0"
 placeholder="مثال: 2500"
 >
 
+</div>
+
+</div>
+
+<div class="actions">
+
 <button
 type="button"
 class="btn btn-primary"
-onclick="saveSchoolPricingSelection()"
-style="margin-top:15px;"
+onclick="saveSchoolPricing()"
+>
+💾 حفظ
+</button>
+
+</div>
+
+</div>
+
+<hr style="margin:25px 0;border:0;border-top:1px solid #eee">
+
+<h4>🧸 أسعار ومواقيت الروضة</h4>
+
+<p class="small">
+اختر فوج الروضة لتعديل الوقت والسعر.
+</p>
+
+<div class="field">
+
+<label>🧸 اختر الفوج</label>
+
+<select id="crechePricingSelect"
+onchange="loadCrechePricing()">
+
+<option value="">
+اختر فوج الروضة
+</option>
+
+${
+(settings.crecheGroups || [])
+.map((g,index)=>`
+<option value="${index}">
+${esc(g.name)} ← ${esc(g.period)}
+</option>
+`)
+.join("")
+}
+
+</select>
+
+</div>
+
+<div id="crechePricingFields"
+style="display:none;margin-top:18px">
+
+<div class="grid">
+
+<div class="field">
+
+<label>⏰ وقت البداية</label>
+
+<input
+id="crechePricingStart"
+type="time"
+>
+
+</div>
+
+<div class="field">
+
+<label>⏰ وقت النهاية</label>
+
+<input
+id="crechePricingEnd"
+type="time"
+>
+
+</div>
+
+<div class="field full">
+
+<label>💰 السعر الشهري</label>
+
+<input
+id="crechePricingPrice"
+type="number"
+min="0"
+placeholder="مثال: 5000"
+>
+
+</div>
+
+</div>
+
+<div class="actions">
+
+<button
+type="button"
+class="btn btn-purple"
+onclick="saveCrechePricing()"
 >
 💾 حفظ
 </button>
@@ -917,21 +1026,17 @@ box.innerHTML = html;
 }
 
 
-/* =========================================
-تحميل بيانات المستوى والفوج المختار
-========================================= */
+/* =========================
+المدرسة: تحميل السعر والوقت
+========================= */
 
-function loadSchoolPricingSelection(){
+function loadSchoolPricing(){
 
-const select =
-document.getElementById("schoolPricingSelect");
+const index =
+document.getElementById("schoolPricingSelect").value;
 
 const fields =
 document.getElementById("schoolPricingFields");
-
-if(!select || !fields) return;
-
-const index = select.value;
 
 if(index === ""){
 
@@ -940,10 +1045,10 @@ fields.style.display = "none";
 return;
 }
 
-const program =
+const p =
 settings.programs[Number(index)];
 
-if(!program){
+if(!p){
 
 fields.style.display = "none";
 
@@ -952,97 +1057,67 @@ return;
 
 fields.style.display = "block";
 
-
-/*
-* إنشاء مفتاح فريد لهذا البرنامج
-*/
-const key = getSchoolPricingKey(program);
-
-
-/*
-* جلب السعر والوقت المحفوظ
-*/
-const saved =
-settings.schoolSchedules &&
-settings.schoolSchedules[key]
-? settings.schoolSchedules[key]
-: {};
-
-
-document.getElementById("schoolStartTime").value =
-saved.startTime || "";
-
-document.getElementById("schoolEndTime").value =
-saved.endTime || "";
-
-document.getElementById("schoolPrice").value =
-saved.price || "";
-
-}
-
-
-/* =========================================
-إنشاء مفتاح البرنامج
-========================================= */
-
-function getSchoolPricingKey(program){
-
-return [
-program.stage || "",
-program.level || "",
-program.specialization || "",
-program.subject || "",
-program.group || ""
+const key = [
+p.stage,
+p.level,
+p.specialization,
+p.subject,
+p.group
 ].join("|||");
 
+const schedule =
+settings.schoolSchedules[key] || {};
+
+document.getElementById("schoolPricingStart").value =
+schedule.startTime || "";
+
+document.getElementById("schoolPricingEnd").value =
+schedule.endTime || "";
+
+document.getElementById("schoolPricingPrice").value =
+schedule.price ??
+settings.schoolPrices[p.level] ??
+"";
+
 }
 
 
-/* =========================================
-حفظ سعر ووقت البرنامج
-========================================= */
+/* =========================
+المدرسة: حفظ
+========================= */
 
-function saveSchoolPricingSelection(){
+function saveSchoolPricing(){
 
-const select =
-document.getElementById("schoolPricingSelect");
+const index =
+document.getElementById("schoolPricingSelect").value;
 
-if(!select || select.value === ""){
+if(index === ""){
 
 alert("⚠️ اختر المستوى والفوج أولاً.");
 
 return;
 }
 
+const p =
+settings.programs[Number(index)];
 
-const program =
-settings.programs[Number(select.value)];
+if(!p) return;
 
-if(!program){
+const start =
+document.getElementById("schoolPricingStart").value;
 
-alert("❌ تعذر العثور على الفوج.");
-
-return;
-}
-
-
-const startTime =
-document.getElementById("schoolStartTime").value;
-
-const endTime =
-document.getElementById("schoolEndTime").value;
+const end =
+document.getElementById("schoolPricingEnd").value;
 
 const price =
-document.getElementById("schoolPrice").value;
+document.getElementById("schoolPricingPrice").value;
 
-
-if(!startTime || !endTime){
+if(!start || !end){
 
 alert("⚠️ حدد وقت البداية والنهاية.");
 
 return;
 }
-
 
 if(price === ""){
 
@@ -1051,233 +1126,126 @@ alert("⚠️ أدخل السعر.");
 return;
 }
 
-
-if(!settings.schoolSchedules){
-
-settings.schoolSchedules = {};
-
-}
-
-
-const key =
-getSchoolPricingKey(program);
-
+const key = [
+p.stage,
+p.level,
+p.specialization,
+p.subject,
+p.group
+].join("|||");
 
 settings.schoolSchedules[key] = {
 
-startTime: startTime,
-
-endTime: endTime,
-
+startTime: start,
+endTime: end,
 price: Number(price)
 
 };
 
+/*
+* نحفظ السعر أيضًا حسب المستوى
+*/
+settings.schoolPrices[p.level] =
+Number(price);
 
 saveAll();
 
-
-alert(
-"✅ تم حفظ الوقت والسعر بنجاح."
-);
+alert("✅ تم حفظ السعر والتوقيت بنجاح.");
 
 }
 
-/* =========================================================
-🧸 إدارة أسعار وأوقات الروضة
-========================================================= */
 
-function renderCrechePriceManager(container) {
+/* =========================
+الروضة: تحميل
+========================= */
 
-const groups = crecheGroups();
+function loadCrechePricing(){
 
-container.innerHTML = `
+const index =
+document.getElementById("crechePricingSelect").value;
 
-<div class="price-manager">
+const fields =
+document.getElementById("crechePricingFields");
 
-<h3>🧸 أسعار ومواقيت الروضة</h3>
+if(index === ""){
 
-<p class="small">
-اختر الفوج، ثم حدد التوقيت والسعر.
-</p>
+fields.style.display = "none";
 
-<label>👥 الفوج</label>
-
-<select id="priceCrecheGroup">
-
-<option value="">
-اختر الفوج
-</option>
-
-${groups.map(g => `
-<option value="${esc(g)}">
-${esc(g)}
-</option>
-`).join("")}
-
-</select>
-
-<label>🕐 وقت البداية</label>
-
-<input
-id="priceCrecheStart"
-type="time"
->
-
-<label>🕐 وقت النهاية</label>
-
-<input
-id="priceCrecheEnd"
-type="time"
->
-
-<label>💰 سعر الروضة بالدج</label>
-
-<input
-id="priceCrecheValue"
-type="number"
-min="0"
-step="50"
-placeholder="مثال: 3000"
->
-
-<button
-type="button"
-class="btn btn-purple"
-onclick="saveCrechePricing()">
-
-💾 حفظ
-
-</button>
-
-<div
-id="crechePriceSaved"
-class="saved-message">
-</div>
-
-</div>
-
-
-<!-- 🚐 النقلية مستقلة -->
-
-<div class="price-manager">
-
-<h3>🚐 نقلية فاكرونة</h3>
-
-<p class="small">
-سعر النقلية مستقل عن سعر الروضة.
-</p>
-
-<label>
-💰 سعر النقلية بالدج
-</label>
-
-<input
-id="priceTransportValue"
-type="number"
-min="0"
-step="50"
-placeholder="مثال: 1500"
-value="${settings.transportPrice || ""}"
->
-
-<button
-type="button"
-class="btn btn-primary"
-onclick="saveTransportPricing()">
-
-💾 حفظ سعر النقلية
-
-</button>
-
-<div
-id="transportPriceSaved"
-class="saved-message">
-</div>
-
-</div>
-`;
-
-const select =
-document.getElementById("priceCrecheGroup");
-
-select.addEventListener(
-"change",
-loadCrechePricing
-);
-}
-
-
-function loadCrechePricing() {
-
-const group =
-document.getElementById("priceCrecheGroup")?.value;
-
-if (!group) return;
-
-const data =
-getCrechePrice(group);
-
-document.getElementById("priceCrecheStart").value =
-data.start || "";
-
-document.getElementById("priceCrecheEnd").value =
-data.end || "";
-
-document.getElementById("priceCrecheValue").value =
-data.price || "";
-}
-
-
-function saveCrechePricing() {
-
-const group =
-document.getElementById("priceCrecheGroup")?.value;
-
-if (!group) {
-alert("اختر الفوج أولًا.");
 return;
 }
 
-settings.crechePricing[group] = {
+const g =
+settings.crecheGroups[Number(index)];
 
-start:
-document.getElementById("priceCrecheStart").value,
+if(!g) return;
 
-end:
-document.getElementById("priceCrecheEnd").value,
+fields.style.display = "block";
 
-price:
-document.getElementById("priceCrecheValue").value
-};
+document.getElementById("crechePricingStart").value =
+g.startTime || "";
 
-saveAll();
+document.getElementById("crechePricingEnd").value =
+g.endTime || "";
 
-document.getElementById("crechePriceSaved").textContent =
-"✅ تم حفظ السعر والتوقيت";
+document.getElementById("crechePricingPrice").value =
+g.price || "";
+
 }
 
 
-function saveTransportPricing() {
+/* =========================
+الروضة: حفظ
+========================= */
+
+function saveCrechePricing(){
+
+const index =
+document.getElementById("crechePricingSelect").value;
+
+if(index === ""){
+
+alert("⚠️ اختر فوج الروضة أولاً.");
+
+return;
+}
+
+const g =
+settings.crecheGroups[Number(index)];
+
+if(!g) return;
+
+const start =
+document.getElementById("crechePricingStart").value;
+
+const end =
+document.getElementById("crechePricingEnd").value;
 
 const price =
-Number(
-document.getElementById("priceTransportValue").value
-);
+document.getElementById("crechePricingPrice").value;
 
-if (isNaN(price) || price < 0) {
-alert("أدخل سعرًا صحيحًا.");
+if(!start || !end){
+
+alert("⚠️ حدد وقت البداية والنهاية.");
+
 return;
 }
 
-settings.transportPrice = price;
+if(price === ""){
+
+alert("⚠️ أدخل السعر.");
+
+return;
+}
+
+g.startTime = start;
+g.endTime = end;
+g.price = Number(price);
 
 saveAll();
 
-document.getElementById("transportPriceSaved").textContent =
-"✅ تم حفظ سعر النقلية";
-}
+alert("✅ تم حفظ سعر وتوقيت الروضة بنجاح.");
 
+}
 
 /* =========================================================
 ⚙️ إضافة الإدارة
