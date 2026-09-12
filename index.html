@@ -1651,5 +1651,331 @@ addPricingToAdmin,
 
 })();
 </script>
+<script>
+(function () {
+"use strict";
+
+const DISTRIBUTION_SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycbyryYUuZjhDFSiPJ_Xt4PTLGaN--aYYx9SRR0TB0ybiQuOLmLNxl_Mg8hINZAkuB6yR/exec";
+
+/*
+هذه الدالة تحدد اسم الورقة التي يجب أن يذهب إليها الطلب.
+*/
+function getDestinationSheet(data) {
+
+/* =========================
+الروضة
+========================= */
+if (data.type === "creche") {
+
+const group = String(data.group || "").trim();
+const period = String(data.period || "").trim();
+
+if (!group) {
+return [];
+}
+
+/*
+إذا اختار صباح + مساء
+نرسل نفس الطلب إلى ورقتين.
+*/
+if (
+period.includes("صباح") &&
+period.includes("مساء")
+) {
+return [
+"روضة - " + group + " - صباحية",
+"روضة - " + group + " - مسائية"
+];
+}
+
+if (period.includes("صباح")) {
+return [
+"روضة - " + group + " - صباحية"
+];
+}
+
+if (period.includes("مساء")) {
+return [
+"روضة - " + group + " - مسائية"
+];
+}
+
+return [
+"روضة - " + group
+];
+}
+
+/* =========================
+المدرسة
+========================= */
+if (data.type === "school") {
+
+const parts = [
+data.stage,
+data.level,
+data.specialization,
+data.subject,
+data.group
+]
+.map(x => String(x || "").trim())
+.filter(Boolean);
+
+if (!parts.length) {
+return [];
+}
+
+return [
+"مدرسة - " + parts.join(" - ")
+];
+}
+
+return [];
+}
+
+
+/*
+تنظيف اسم الورقة حتى لا يسبب Google Sheets مشكلة.
+*/
+function cleanSheetName(name) {
+
+return String(name || "")
+.replace(/[\\\/\?\*\[\]\:]/g, "-")
+.substring(0, 90)
+.trim();
+}
+
+
+/*
+إرسال الطلب إلى Apps Script.
+*/
+async function sendDistributedRegistration(data) {
+
+const sheets = getDestinationSheet(data);
+
+if (!sheets.length) {
+console.error("لم يتم تحديد ورقة للطلب:", data);
+return false;
+}
+
+/*
+نضيف الأوراق المطلوبة داخل البيانات نفسها.
+Apps Script سيقرأ destinationSheets.
+*/
+data.destinationSheets = sheets.map(cleanSheetName);
+
+try {
+
+await fetch(DISTRIBUTION_SCRIPT_URL, {
+method: "POST",
+mode: "no-cors",
+headers: {
+"Content-Type":
+"application/x-www-form-urlencoded;charset=UTF-8"
+},
+body:
+"payload=" +
+encodeURIComponent(JSON.stringify(data))
+});
+
+return true;
+
+} catch (error) {
+
+console.error(
+"خطأ أثناء إرسال الطلب للتوزيع:",
+error
+);
+
+return false;
+}
+}
+
+
+/*
+نحتفظ بالـ submitRegistration الأصلي
+ثم نضع طبقة توزيع فوقه.
+*/
+if (typeof window.submitRegistration === "function") {
+
+const originalSubmitRegistration =
+window.submitRegistration;
+
+window.submitRegistration = async function (e) {
+
+e.preventDefault();
+
+const form = e.target;
+
+const button =
+form.querySelector('button[type="submit"]');
+
+if (button) {
+button.disabled = true;
+button.textContent = "جاري إرسال الطلب...";
+}
+
+try {
+
+const fd = new FormData(form);
+
+const data = {
+id: Date.now(),
+type: window.currentType || "",
+date: new Date().toLocaleString("ar-DZ")
+};
+
+/* =========================
+المدرسة
+========================= */
+
+if (data.type === "school") {
+
+data.stage =
+document.getElementById("stageSelect")?.value || "";
+
+data.level =
+document.getElementById("levelSelect")?.value || "";
+
+data.specialization =
+document.getElementById("specSelect")?.value || "";
+
+data.subject =
+document.getElementById("subjectSelect")?.value || "";
+
+data.group =
+document.getElementById("groupSelect")?.value || "";
+
+/*
+نبحث عن البرنامج حتى نحافظ على subjectGroup
+*/
+if (
+typeof settings !== "undefined" &&
+Array.isArray(settings.programs)
+) {
+
+const program = settings.programs.find(x =>
+x.stage === data.stage &&
+x.level === data.level &&
+x.specialization === data.specialization &&
+x.subject === data.subject &&
+x.group === data.group
+);
+
+data.subjectGroup =
+program?.subjectGroup || "";
+}
+}
+
+/* =========================
+الروضة
+========================= */
+
+if (data.type === "creche") {
+
+data.period =
+document.getElementById("periodSelect")?.value || "";
+
+data.group =
+document.getElementById("crecheGroupSelect")?.value || "";
+}
+
+/*
+إضافة جميع حقول الطالب/الطفل.
+*/
+fd.forEach(function (value, key) {
+data[key] = value;
+});
+
+/*
+تحديد الأوراق.
+*/
+const destinationSheets =
+getDestinationSheet(data);
+
+if (!destinationSheets.length) {
+
+alert(
+"❌ لم يتم تحديد الفوج أو المعلومات اللازمة لتوزيع الطلب."
+);
+
+if (button) {
+button.disabled = false;
+button.textContent =
+"إرسال طلب التسجيل 🚀";
+}
+
+return;
+}
+
+data.destinationSheets =
+destinationSheets.map(cleanSheetName);
+
+/*
+إرسال مباشر إلى Apps Script.
+*/
+await sendDistributedRegistration(data);
+
+/*
+حفظ الطلب محليًا مثل النظام الأصلي.
+*/
+if (typeof registrations !== "undefined") {
+registrations.push(data);
+
+if (typeof saveAll === "function") {
+saveAll();
+}
+}
+
+/*
+رسالة النجاح.
+*/
+const successBox =
+document.getElementById("successBox");
+
+if (successBox) {
+
+successBox.innerHTML =
+"✅ تم إرسال طلب التسجيل بنجاح!<br>" +
+"<span style='font-size:14px'>" +
+"تم توجيه الطلب إلى القسم/الفوج الصحيح." +
+"</span>";
+
+successBox.classList.remove("hidden");
+}
+
+/*
+إعادة ضبط النموذج.
+*/
+form.reset();
+
+if (typeof renderForm === "function") {
+renderForm();
+}
+
+window.scrollTo({
+top: 0,
+behavior: "smooth"
+});
+
+} catch (error) {
+
+console.error(error);
+
+alert(
+"❌ حدث خطأ أثناء إرسال الطلب. حاول مرة أخرى."
+);
+
+if (button) {
+button.disabled = false;
+button.textContent =
+"إرسال طلب التسجيل 🚀";
+}
+}
+};
+}
+
+})();
+</script>
 </body>
 </html>
