@@ -307,8 +307,8 @@ let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "null") || DEFAU
 let registrations = JSON.parse(localStorage.getItem("registrations") || "[]");
 
 // إضافة فوج القرآن تلقائيا حتى في المواقع التي كانت لديها إعدادات محفوظة سابقا
-if(!settings.programs.some(x=>x.stage==="مدرسة" && x.level==="فوج القرآن الكريم" && x.group==="فوج القرآن الكريم")){
-  settings.programs.push({stage:"مدرسة",level:"فوج القرآن الكريم",specialization:"قرآن كريم",subject:"حفظ وتجويد القرآن الكريم",subjectGroup:"",group:"فوج القرآن الكريم",capacity:15});
+if(!settings.programs.some(x=>x.stage==="تحفيظ القرآن الكريم" && x.level==="فوج القرآن الكريم" && x.group==="فوج القرآن الكريم")){
+  settings.programs.push({stage:"تحفيظ القرآن الكريم",level:"فوج القرآن الكريم",specialization:"قرآن كريم",subject:"حفظ وتجويد القرآن الكريم",subjectGroup:"",group:"فوج القرآن الكريم",capacity:15});
   localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));
 }
 let currentType = null;
@@ -1254,7 +1254,7 @@ type="checkbox"
 id="fakarounaTransport"
 >
 
-🚐 أريد النقل بواسطة فاكرونة
+🚐 أريد النقل بواسطة فكرونة
 </label>
 
 <div class="small" style="margin-top:7px">
@@ -1355,7 +1355,7 @@ addHiddenField(
 form,
 "transport",
 transport
-? "نعم - فاكرونة"
+? "نعم - فكرونة"
 : "لا"
 );
 
@@ -1497,7 +1497,7 @@ html += `
 <br>
 
 🚐 <strong>النقل:</strong>
-نعم، بواسطة فاكرونة
+نعم، بواسطة فكرونة
 
 <br>
 
@@ -1656,7 +1656,7 @@ addPricingToAdmin,
 "use strict";
 
 const DISTRIBUTION_SCRIPT_URL =
-"https://script.google.com/macros/s/AKfycbyryYUuZjhDFSiPJ_Xt4PTLGaN--aYYx9SRR0TB0ybiQuOLmLNxl_Mg8hINZAkuB6yR/exec";
+"https://script.google.com/macros/s/AKfycbwkRHKrpZBJyhGHF-ta8Q83px4xNDvj13O4nNXR5-NlVhiAXOD5x6I-WQFPgASZ4qJv/exec";
 
 /*
 هذه الدالة تحدد اسم الورقة التي يجب أن يذهب إليها الطلب.
